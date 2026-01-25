@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>O Último Herói</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <!-- Descrição do site -->
+  <meta name="description"
+    content="O último herói origens é um jogo 2d de rpg que mostra as origens da história desse univer em um mundo com batalha contra monstros, reconstrução de vila e gerenciamente de energia.">
+
+  <!-- Palavras-chave para SEO -->
+  <meta name="keywords" content="jogo de aventura, rpg, herói, O último herói">
+
+  <!-- Autor do site -->
+  <meta name="author" content="Marcos">
+</head>
+
+<body>
+
+  <div id="cenario"></div>
+
+  <div id="menu">
+    <div id="tela-inicial">
+      <h1>O Último Herói origens</h1>
+      <button onclick="abrirTelaSlots()">Jogar / Carregar Jogo</button>
+      <button onclick="abrirPainelFinais()">🏆 Galeria de Finais</button>
+      <div id="codigo-container">
+        <input type="text" id="input-codigo" placeholder="Inserir código...">
+        <button onclick="resgatarCodigo()">Resgatar</button>
+      </div>
+      <button onclick="mostrarCreditos()">Créditos</button>
+      <p>Beta 1.0</p>
+    </div>
+  </div>
+
+  <div id="painel-finais" class="painel-finais-menu">
+    <div class="painel-finais-conteudo">
+      <h2>🏆 Galeria de Finais</h2>
+
+      <div class="status-finais">
+        <p id="final-bom">🌟 Final Bom: ???</p>
+        <p id="final-ruim">💀 Final Ruim: ???</p>
+      </div>
+
+      <button onclick="fecharPainelFinais()">Fechar</button>
+    </div>
+  </div>
+
+  <audio id="trilha" loop>
+    <source src="audio/musica.mp3" type="audio/mpeg">
+    Seu navegador não suporta áudio.
+  </audio>
+
+  <div id="painel-audio-controles">
+    <button id="btn-mutar" onclick="alternarSom()">🔊</button>
+    <input type="range" id="controle-volume" min="0" max="1" step="0.1" value="0.5" oninput="ajustarVolume(this.value)">
+  </div>
+
+  <link rel="icon" href="data:,">
+
+  <div id="ui"></div>
+
+  <div id="tela-slots" style="display: none;">
+    <div class="modal-content">
+      <h2>💾 Selecione um Slot</h2>
+      <div class="slots-container">
+        <div class="slot-card" id="slot-1">
+          <h3>Slot 1</h3>
+          <div class="slot-info">
+            <p id="info-slot-1">Vazio</p>
+          </div>
+          <div class="slot-actions">
+            <button class="btn-jogar" onclick="carregarJogo(1)">Jogar</button>
+            <button class="btn-apagar" onclick="apagarSlot(1)">Apagar</button>
+          </div>
+        </div>
+        <div class="slot-card" id="slot-2">
+          <h3>Slot 2</h3>
+          <div class="slot-info">
+            <p id="info-slot-2">Vazio</p>
+          </div>
+          <div class="slot-actions">
+            <button class="btn-jogar" onclick="carregarJogo(2)">Jogar</button>
+            <button class="btn-apagar" onclick="apagarSlot(2)">Apagar</button>
+          </div>
+        </div>
+        <div class="slot-card" id="slot-3">
+          <h3>Slot 3</h3>
+          <div class="slot-info">
+            <p id="info-slot-3">Vazio</p>
+          </div>
+          <div class="slot-actions">
+            <button class="btn-jogar" onclick="carregarJogo(3)">Jogar</button>
+            <button class="btn-apagar" onclick="apagarSlot(3)">Apagar</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn-voltar" onclick="fecharTelaSlots()">Voltar</button>
+    </div>
+  </div>
+
+  <div id="jogo-interface" style="display: none;">
+    <div class="colunas">
+
+      <div id="painel-lateral">
+        <h3>📊 Status</h3>
+        <p>📅 Dia: <span id="dia-atual">1</span> / 10</p>
+        <p>Nome: <span id="nome-heroi">Herói</span></p>
+        <p>Vida: <span id="vida">100</span>/<span id="vida-maxima">100</span></p>
+        Energia: <span id="energia-atual"></span>/<span id="energia-maxima"></span>
+        <p>Ouro: <span id="dinheiro">0</span></p>
+        <div id="status-combate">
+          ⚔️ ATQ: <span id="atk">0</span> |
+          🛡️ DEF: <span id="def">0</span>
+        </div>
+        <hr>
+        <button id="botaoTutorial" class="botao-piscando" onclick="abrirTutorial()">
+          📖 Tutorial
+        </button>
+        <div id="vila-status">
+          <h4>🏠 Vila</h4>
+          <p>Nível: <span id="nivel-vila">1</span></p>
+          <p>Madeira: <span id="madeira">0</span></p>
+          <p>Pedra: <span id="pedra">0</span></p>
+          <p>Ferro: <span id="ferro">0</span></p>
+        </div>
+        <button onclick="salvarESair()" style="background: #555; width: 100%;">💾 Salvar e Sair</button>
+        <div style="display:none">
+          <span id="prox-nivel"></span>
+          <span id="custo-madeira"></span>
+          <span id="custo-pedra"></span>
+          <span id="custo-ferro"></span>
+        </div>
+      </div>
+      <div id="centro">
+        <div id="game-container"></div>
+
+        <div id="melhorar-vila" style="display:none;"> ... </div>
+        <div id="explorar-floresta" style="display:none;"> ... </div>
+        <div id="caverna-acoes" style="display:none;"> ... </div>
+
+        <div id="painel-jornal" class="oculto">
+          <h2 id="titulo-jornal"></h2>
+          <div id="texto-jornal"></div>
+          <button onclick="fecharJornal()">Fechar</button>
+        </div>
+
+        <div id="painel-inventario" class="painel oculto">
+          <div class="painel-conteudo">
+            <h2>🎒 Inventário</h2>
+            <div id="conteudo-inventario"></div>
+            <button onclick="fecharInventario()">Fechar</button>
+          </div>
+        </div>
+
+        <button onclick="abrirInventario()" id="btn-inventario">Inventário</button>
+
+        <div id="loja-menu" style="display:none">
+          <h3>🛒 Loja</h3>
+
+          <button onclick="comprarPocao()">
+            🧪 Poção (cura 30) – 20 ouro
+          </button>
+
+          <button onclick="comprarEspada()">
+            ⚔️ Espada (+5 ATQ) – 50 ouro
+          </button>
+
+          <button onclick="comprarEscudo()">
+            🛡️ Escudo (+3 DEF) – 40 ouro
+          </button>
+
+          <br><br>
+          <button onclick="fecharLoja()">❌ Sair da loja</button>
+        </div>
+
+        <div id="menuTutorial" class="menu-ui" style="display:none;">
+          <h2>📘 Tutorial — Sistema de Energia</h2>
+          <p>
+            Seu herói possui <b>10 de energia por dia</b>.<br><br>
+            🔹 Cada ação consome energia (lutar, coletar, melhorar vila, etc).<br>
+            🔹 Quando a energia chega a <b>0</b>, você precisa <b>dormir</b>.<br>
+            🔹 Dormir encerra o dia e restaura sua energia.<br><br>
+            ⚠️ Planeje bem suas ações!
+          </p>
+          <button onclick="fecharTutorial()">Fechar</button>
+        </div>
+
+
+        <div id="acoes">
+          <button onclick="mudarCenario('vila')">Ir para Vila</button>
+          <button onclick="mudarCenario('floresta')">Ir para Floresta</button>
+          <button onclick="mudarCenario('caverna')">Ir para Caverna</button>
+        </div>
+      </div>
+
+      <div id="area-texto">
+        <h3>📜 Diário</h3>
+        <div id="log"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script src="main-phaser.js"></script>
+</body>
+
+</html>
