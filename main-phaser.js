@@ -24,35 +24,22 @@ class CenaVila extends Phaser.Scene {
 
         // ----------- mundo ----------
 
-        const LARGURA_MUNDO = 1200;
+        const LARGURA_MUNDO = 3000;
         const ALTURA_MUNDO = 800;
 
         this.physics.world.setBounds(0, 0, LARGURA_MUNDO, ALTURA_MUNDO);
 
         const ESPACO = 250;
 
+        this.miniMapa = this.add.graphics()
+            .setScrollFactor(0)
+            .setDepth(999);
+
         // --------- cenario -------
 
-        this.bgVila = this.add.tileSprite(
-            0, 0,
-            LARGURA_MUNDO,
-            ALTURA_MUNDO,
-            'bgVila'
-        ).setOrigin(0, 0);
-
-        this.bgFloresta = this.add.tileSprite(
-            0, 0,
-            LARGURA_MUNDO,
-            ALTURA_MUNDO,
-            'bgFloresta'
-        ).setOrigin(0, 0);
-
-        this.bgCaverna = this.add.tileSprite(
-            0, 0,
-            LARGURA_MUNDO,
-            ALTURA_MUNDO,
-            'bgCaverna'
-        ).setOrigin(0, 0);
+        this.bgVila = this.add.tileSprite(0, 0, 1000, 800, 'bgVila').setOrigin(0, 0);
+        this.bgFloresta = this.add.tileSprite(1000, 0, 1000, 800, 'bgFloresta').setOrigin(0, 0);
+        this.bgCaverna = this.add.tileSprite(2000, 0, 1000, 800, 'bgCaverna').setOrigin(0, 0);
 
         /* =====================
            JOGADOR
@@ -67,7 +54,7 @@ class CenaVila extends Phaser.Scene {
         // ----------------- camera --------
 
         this.cameras.main.setBounds(0, 0, LARGURA_MUNDO, ALTURA_MUNDO);
-        this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+        this.cameras.main.startFollow(this.player);
 
         /* =====================
            ZONAS (INVISÍVEIS)
@@ -78,28 +65,23 @@ class CenaVila extends Phaser.Scene {
         this.grupoCaverna = this.add.group();
 
         // VILA
-        this.zonaUpgrade = this.criarZona(270 + ESPACO, 300 - ESPACO, 64, 64);
-        this.zonaJornal = this.criarZona(310 + ESPACO, 310 + ESPACO, 60, 60);
-        this.zonaLoja = this.criarZona(380 + ESPACO, 300, 60, 60);
-        this.zonaCama = this.criarZona(500 - ESPACO, 430 + ESPACO, 70, 70);
-        this.zonaTemplo = this.criarZona(180, 250 + ESPACO, 60, 60);
+        this.zonaUpgrade = this.criarZona(250, 200, 70, 70)
+        this.zonaLoja = this.criarZona(200, 400, 80, 80);
+        this.zonaCama = this.criarZona(500, 200, 80, 80);
+        this.zonaTemplo = this.criarZona(800, 450, 80, 80);
+        this.zonaJornal = this.criarZona(350, 150, 60, 60);
 
         // FLORESTA
-        this.zonaArvore = this.criarZona(500 - ESPACO, 100, 50, 50);
-        this.zonaMinerio = this.criarZona(100 + ESPACO, 300, 40, 40);
-        this.zonaMercadoNegro = this.criarZona(700 + ESPACO, 450 + ESPACO, 60, 60);
-
+        this.zonaArvore = this.criarZona(1300, 300, 60, 60);
+        this.zonaMinerio = this.criarZona(1700, 500, 60, 60);
+        this.zonaMercadoNegro = this.criarZona(1900, 200, 70, 70);
         // CAVERNA
-        this.zonaLuta = this.criarZona(600, 700, 80, 80);
+        this.zonaLuta = this.criarZona(2500, 400, 120, 120);
 
         /* =====================
              SPRITES VISUAIS
          ===================== */
-        this.spriteVila = this.add.sprite(
-            this.zonaUpgrade.x,
-            this.zonaUpgrade.y,
-            'vila'
-        );
+        this.spriteVila = this.add.sprite(200, 200, 'vila');
 
         this.grupoVila.add(this.spriteVila);
 
@@ -185,6 +167,52 @@ class CenaVila extends Phaser.Scene {
         this.player.setDepth(2);
 
         /* =====================
+           CONFIGURAÇÃO DO MINI-MAPA
+        ===================== */
+        // Definimos as medidas para usar tanto no create quanto no update
+        this.miniMapaConfig = {
+            x: 20,
+            y: 20,
+            largura: 200,
+            altura: 40,
+            larguraMundo: 3000 // A largura total dos 3 cenários
+        };
+
+        // 1. Fundo Preto do Mini-mapa
+        this.bgMiniMapa = this.add.rectangle(
+            this.miniMapaConfig.x,
+            this.miniMapaConfig.y,
+            this.miniMapaConfig.largura,
+            this.miniMapaConfig.altura,
+            0x000000, 0.8
+        ).setOrigin(0).setScrollFactor(0).setDepth(2000);
+
+        // 2. Cores dos Setores (Vila, Floresta, Caverna)
+        // Vila (Cinza)
+        this.add.rectangle(this.miniMapaConfig.x, this.miniMapaConfig.y, 66, 40, 0x555555, 0.5)
+            .setOrigin(0).setScrollFactor(0).setDepth(2001);
+        // Floresta (Verde)
+        this.add.rectangle(this.miniMapaConfig.x + 66, this.miniMapaConfig.y, 66, 40, 0x228b22, 0.5)
+            .setOrigin(0).setScrollFactor(0).setDepth(2001);
+        // Caverna (Roxo/Preto)
+        this.add.rectangle(this.miniMapaConfig.x + 132, this.miniMapaConfig.y, 68, 40, 0x2e0854, 0.5)
+            .setOrigin(0).setScrollFactor(0).setDepth(2001);
+
+        // 3. Indicador do Herói (Bolinha Amarela)
+        this.indicadorHeroi = this.add.circle(
+            this.miniMapaConfig.x,
+            this.miniMapaConfig.y + 20,
+            5,
+            0xffff00
+        ).setScrollFactor(0).setDepth(2005);
+
+        // 4. Bordas
+        this.add.graphics()
+            .lineStyle(2, 0xffffff, 1)
+            .strokeRect(this.miniMapaConfig.x, this.miniMapaConfig.y, this.miniMapaConfig.largura, this.miniMapaConfig.altura)
+            .setScrollFactor(0).setDepth(2006);
+
+        /* =====================
            TEXTO DE AÇÃO
         ===================== */
         this.textoAcao = this.add.text(300, 370, '', {
@@ -208,7 +236,6 @@ class CenaVila extends Phaser.Scene {
 
 
     update() {
-        if (typeof cenarioAtual === 'undefined') return;
 
         /* =====================
            MOVIMENTO
@@ -224,81 +251,78 @@ class CenaVila extends Phaser.Scene {
 
         this.textoAcao.setText('');
 
-        /* =====================
-           VISIBILIDADE DAS ZONAS
-        ===================== */
-        this.bgVila.setVisible(cenarioAtual === 'vila');
-        this.bgFloresta.setVisible(cenarioAtual === 'floresta');
-        this.bgCaverna.setVisible(cenarioAtual === 'caverna');
+        //----------- fundos -----------
 
-        const naVila = cenarioAtual === 'vila';
-        const naFloresta = cenarioAtual === 'floresta';
-        const naCaverna = cenarioAtual === 'caverna';
+        // 🏠 VILA (canto superior esquerdo)
+        this.add.image(500, 400, 'bgVila');
 
-        this.zonaUpgrade.visible = naVila;
-        this.zonaCama.visible = naVila;
-        this.zonaLoja.visible = naVila;
-        this.zonaJornal.visible = naVila;
-        this.zonaTemplo.visible = naVila;
+        // 🌲 FLORESTA (meio do mapa)
+        this.add.image(2000, 1500, 'bgFloresta');
 
-        this.zonaArvore.visible = naFloresta;
-        this.zonaMinerio.visible = naFloresta;
+        // 🕳️ CAVERNA (canto inferior direito)
+        this.add.image(3500, 2600, 'bgCaverna');
 
-        this.zonaLuta.visible = naCaverna;
-
-        this.grupoVila.setVisible(cenarioAtual === 'vila');
-        this.grupoFloresta.setVisible(cenarioAtual === 'floresta');
-        this.grupoCaverna.setVisible(cenarioAtual === 'caverna');
 
         /* =====================
            INTERAÇÕES
         ===================== */
 
         // FLORESTA
-        if (naFloresta) {
-            if (this.overlap(this.zonaArvore)) {
-                this.acao('🌲 Pegar MADEIRA', () => coletar('madeira'));
-            }
-
-            if (this.overlap(this.zonaMercadoNegro)) {
-                this.acao('🕶️ Mercado Negro', () => abrirMercadoNegro());
-            }
-
-            if (this.overlap(this.zonaMinerio)) {
-                this.acao('⛏️ Minerar PEDRA e FERRO', () => {
-                    coletar('pedra');
-                    coletar('ferro');
-                });
-            }
+        if (this.overlap(this.zonaArvore)) {
+            this.acao('🌲 Pegar MADEIRA', () => coletar('madeira'));
         }
 
-        // CAVERNA (LUTA)
-        if (naCaverna && this.overlap(this.zonaLuta)) {
-            this.acao('⚔️ LUTAR', () => decidirLuta());
+        // MINÉRIO
+        if (this.overlap(this.zonaMinerio)) {
+            this.acao('⛏️ Minerar PEDRA e FERRO', () => {
+                coletar('pedra');
+                coletar('ferro');
+            });
+        }
+
+        // MERCADO NEGRO
+        if (this.overlap(this.zonaMercadoNegro)) {
+            this.acao('🕶️ Mercado Negro', () => abrirMercadoNegro());
+        }
+
+        // LUTA
+        if (this.overlap(this.zonaLuta)) {
+            this.acao('⚔️ Explorar Caverna', () => decidirLuta());
         }
 
         // VILA
-        if (naVila) {
-            if (this.overlap(this.zonaUpgrade)) {
-                this.acao('🏠 Melhorar VILA', () => executarMelhoriaVila());
-            }
-
-            if (this.overlap(this.zonaCama)) {
-                this.acao('💤 Dormir', () => dormir());
-            }
-
-            if (this.overlap(this.zonaLoja)) {
-                this.acao('🛒 Entrar na loja', () => abrirLoja());
-            }
-
-            if (this.overlap(this.zonaJornal)) {
-                this.acao('📰 Ler Jornal', () => lerJornal());
-            }
-
-            if (this.overlap(this.zonaTemplo)) {
-                this.acao('⛩️ Entrar no Templo', () => abrirTemplo());
-            }
+        if (this.overlap(this.zonaUpgrade)) {
+            this.acao('🏠 Melhorar VILA', () => executarMelhoriaVila());
         }
+
+        if (this.overlap(this.zonaCama)) {
+            this.acao('💤 Dormir', () => dormir());
+        }
+
+        if (this.overlap(this.zonaLoja)) {
+            this.acao('🛒 Entrar na loja', () => abrirLoja());
+        }
+
+        if (this.overlap(this.zonaJornal)) {
+            this.acao('📰 Ler Jornal', () => lerJornal());
+        }
+
+        if (this.overlap(this.zonaTemplo)) {
+            this.acao('⛩️ Entrar no Templo', () => abrirTemplo());
+        }
+
+
+        /* =====================
+               ATUALIZAÇÃO DO MINI-MAPA
+            ===================== */
+        if (this.indicadorHeroi && this.miniMapaConfig) {
+            // Calcula a porcentagem do caminho percorrido (0 a 1)
+            const porcentagemX = this.player.x / this.miniMapaConfig.larguraMundo;
+
+            // Aplica essa porcentagem na largura do mini-mapa + o offset inicial (x: 20)
+            this.indicadorHeroi.x = this.miniMapaConfig.x + (porcentagemX * this.miniMapaConfig.largura);
+        }
+
     }
 
     overlap(zona) {
@@ -311,6 +335,7 @@ class CenaVila extends Phaser.Scene {
             callback();
         }
     }
+
 }
 
 /* =====================
