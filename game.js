@@ -25,6 +25,7 @@ let cenarioAtual = 'vila';
 let energiaMaxima = 10;
 let energiaAtual = energiaMaxima;
 const ui = document.getElementById('ui');
+let morreuParaBossFinal = false;
 
 let estadoJogo = {
     jogoEncerrado: false,
@@ -539,69 +540,9 @@ function fecharJornal() {
 
 // -------------------------- som -----------------------
 
-function gerenciarAudio() {
-    // Verificamos se 'trilha' existe antes de tentar usar
-    if (!trilha) {
-        console.warn("Elemento de áudio 'trilha' não encontrado no HTML.");
-        return;
-    }
-    if (!somHabilitado) return;
 
-    // Se o cenário for EXATAMENTE a caverna (área de monstros)
-    if (cenarioAtual === 'caverna') {
-        // 1. Para a música normal
-        trilha.pause();
-
-        // 2. Toca o som da caverna (se já não estiver tocando)
-        if (audioCaverna && audioCaverna.paused) {
-            audioCaverna.play().catch(e => console.log("Erro ao tocar áudio caverna:", e));
-        }
-
-    } else {
-        // Se for QUALQUER outro lugar
-
-        // 1. Para o som da caverna
-        if (audioCaverna) {
-            audioCaverna.pause();
-        }
-
-        // 2. Toca a música normal (se ela estiver parada)
-        if (trilha.paused) {
-            trilha.play().catch(e => console.log("Erro ao tocar trilha:", e));
-        }
-    }
-}
-
-function ajustarVolume(valor) {
-    volumeAtual = valor;
-
-    // Ajusta o volume da trilha principal
-    const trilha = document.getElementById('trilha');
-    if (trilha) trilha.volume = volumeAtual;
-
-    // Se tiver som da caverna ou efeitos, ajuste também
-    if (typeof audioCaverna !== 'undefined' && audioCaverna) {
-        audioCaverna.volume = volumeAtual;
-    }
-}
-
-// Função ligada ao Botão de Mutar
-function alternarSom() {
-    const trilha = document.getElementById('trilha');
-    const btn = document.getElementById('btn-mutar');
-
-    somHabilitado = !somHabilitado; // Inverte (se true vira false, se false vira true)
-
-    if (somHabilitado) {
-        btn.innerHTML = "🔊"; // Ícone de som ligado
-        if (trilha) trilha.play().catch(e => console.log(e));
-        gerenciarAudio(); // Chama sua função original para decidir qual música tocar
-    } else {
-        btn.innerHTML = "🔇"; // Ícone de mudo
-        if (trilha) trilha.pause();
-        // Pausa outros sons se existirem
-        if (typeof audioCaverna !== 'undefined' && audioCaverna) audioCaverna.pause();
-    }
+function alterarVolume(valor) {
+    game.scene.scenes[0].sound.volume = valor; // valor entre 0 e 1
 }
 
 // --- CORE DO JOGO ---
@@ -611,7 +552,6 @@ function iniciarJogo() {
     mudarCenario('vila');
     atualizarTela();
     log("<b>Bem-vindo de volta!</b> Use as setas para andar e Espaço para interagir.");
-    trilha.play();
 }
 
 function mudarCenario(cenario) {
@@ -622,8 +562,50 @@ function mudarCenario(cenario) {
     document.getElementById('caverna-acoes').style.display = (cenario === 'caverna') ? 'block' : 'none';
 
     log(`🌍 Você viajou para: <b>${cenario.toUpperCase()}</b>`);
-    gerenciarAudio();
     atualizarTela();
+}
+
+//------------- sistema da bruxa --------------------
+
+function fecharHistoriaBruxa() {
+    estadoJogo.menuAberto = null;
+    morreuParaBossFinal = false;
+
+    heroi.vida = Math.floor(heroi.vidaMaxima * 0.5);
+
+    log("🖤 Uma energia estranha pulsa dentro de você...");
+    log("🧙‍♀️ A bruxa desaparece, como se já soubesse o desfecho.");
+    log("⚠️ Algo dentro de você mudou.");
+
+    atualizarUI();
+}
+
+function mostrarBruxaHistoria() {
+    estadoJogo.menuAberto = 'bruxa';
+
+    const ui = document.getElementById("ui");
+
+    ui.innerHTML = `
+        <div class="menu-bruxa">
+            <h2>🧙‍♀️ A Bruxa observa em silêncio...</h2>
+
+            <p>"Então... chegou a este ponto também."</p>
+
+            <p>"Eu já vi esse olhar antes... o desespero de não ser forte o bastante."</p>
+
+            <p>"Você queria salvar todos... mas o medo de falhar é o que abre espaço para o verdadeiro mal."</p>
+
+            <p>"O poder que você buscou... não vem sem um preço."</p>
+
+            <p>"Seu corpo ainda resiste... mas sua alma já começou a mudar."</p>
+
+            <p>"O Monstro Original... não nasceu monstro."</p>
+
+            <p>"A lenda descreve alguém… exatamente como você."</p>
+
+            <button onclick="fecharHistoriaBruxa()">…O que está acontecendo comigo?</button>
+        </div>
+    `;
 }
 
 //-------------- mecanicas diversas --------
@@ -873,6 +855,10 @@ function iniciarLutaFinal() {
         finalBom();
     } else {
         finalRuim();
+        morreuParaBossFinal = true;
+        mostrarBruxaHistoria();
+        return;
+
     }
 
     atualizarUI();

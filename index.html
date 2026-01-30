@@ -53,9 +53,9 @@
     Seu navegador não suporta áudio.
   </audio>
 
-  <div id="painel-audio-controles">
-    <button id="btn-mutar" onclick="alternarSom()">🔊</button>
-    <input type="range" id="controle-volume" min="0" max="1" step="0.1" value="0.5" oninput="ajustarVolume(this.value)">
+  <div id="controle-volume">
+    🔊 Volume
+    <input type="range" min="0" max="1" step="0.01" value="0.5" onchange="alterarVolume(this.value)">
   </div>
 
   <link rel="icon" href="data:,">

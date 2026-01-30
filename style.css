@@ -205,35 +205,6 @@ button:hover {
     pointer-events: auto;
 }
 
-#painel-audio-controles {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-    /* Fundo escuro transparente */
-    padding: 10px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 1000;
-    /* Garante que fique acima de tudo */
-    border: 1px solid #ffd700;
-    /* Borda dourada estilo RPG */
-}
-
-#btn-mutar {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: white;
-}
-
-#controle-volume {
-    cursor: pointer;
-}
-
 .templo p {
     font-size: 13px;
     color: #ccc;
@@ -431,4 +402,24 @@ button:hover {
         transform: scale(1);
         opacity: 1;
     }
+}
+
+#controle-volume {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    z-index: 9999;
+}
+
+.menu-bruxa {
+    background: rgba(0, 0, 0, 0.9);
+    color: #e0d2ff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
 }

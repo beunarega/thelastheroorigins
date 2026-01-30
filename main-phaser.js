@@ -17,7 +17,9 @@ class CenaVila extends Phaser.Scene {
         this.load.image('bgCaverna', 'backgrounds/caverna.png');
         this.load.image('mercadoNegro', 'assets/mercado_negro.png');
         this.load.image('templo', 'assets/templo.png');
-
+        this.load.image('bruxa', 'assets/bruxa.png');
+        this.load.audio('musicaNormal', 'audio/musica.mp3');
+        this.load.audio('musicaCaverna', 'audio/caverna_ambiente.mp3');
     }
 
     create() {
@@ -56,6 +58,15 @@ class CenaVila extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, LARGURA_MUNDO, ALTURA_MUNDO);
         this.cameras.main.startFollow(this.player);
 
+        //-------------- musica -----------
+
+        this.musicaNormal = this.sound.add('musicaNormal', { loop: true, volume: 0.5 });
+        this.musicaCaverna = this.sound.add('musicaCaverna', { loop: true, volume: 0.5 });
+
+        // Começa com a música normal
+        this.musicaAtual = 'normal';
+        this.musicaNormal.play();
+
         /* =====================
            ZONAS (INVISÍVEIS)
         ===================== */
@@ -75,6 +86,12 @@ class CenaVila extends Phaser.Scene {
         this.zonaArvore = this.criarZona(1300, 300, 60, 60);
         this.zonaMinerio = this.criarZona(1700, 500, 60, 60);
         this.zonaMercadoNegro = this.criarZona(1900, 200, 70, 70);
+        // Posição na floresta (longe da vila)
+        this.bruxa = this.add.sprite(1700, 80, 'bruxa');
+        this.bruxa.setAlpha(0.8);
+        this.bruxa.setDepth(5);
+
+        this.bruxaVisivel = true;
         // CAVERNA
         this.zonaLuta = this.criarZona(2500, 400, 120, 120);
 
@@ -166,6 +183,16 @@ class CenaVila extends Phaser.Scene {
 
         this.player.setDepth(2);
 
+        this.time.addEvent({
+            delay: 4000,
+            loop: true,
+            callback: () => {
+                if (!this.bruxaVisivel) return;
+
+                this.cameras.main.shake(100, 0.001);
+            }
+        });
+
         /* =====================
            CONFIGURAÇÃO DO MINI-MAPA
         ===================== */
@@ -233,6 +260,29 @@ class CenaVila extends Phaser.Scene {
 
     }
 
+    trocarMusica(tipo) {
+        const fadeOut = this.musicaAtual === 'caverna' ? this.musicaCaverna : this.musicaNormal;
+        const fadeIn = tipo === 'caverna' ? this.musicaCaverna : this.musicaNormal;
+
+        this.tweens.add({
+            targets: fadeOut,
+            volume: 0,
+            duration: 800,
+            onComplete: () => fadeOut.stop()
+        });
+
+        fadeIn.setVolume(0);
+        fadeIn.play();
+
+        this.tweens.add({
+            targets: fadeIn,
+            volume: 0.5,
+            duration: 800
+        });
+
+        this.musicaAtual = tipo;
+    }
+
 
 
     update() {
@@ -250,6 +300,20 @@ class CenaVila extends Phaser.Scene {
         else if (this.cursors.down.isDown) this.player.body.setVelocityY(speed);
 
         this.textoAcao.setText('');
+
+        this.controlarBruxa();
+
+        //-------------- musica ------------
+
+        let novaMusica = 'normal';
+
+        if (this.player.x >= 2000) {
+            novaMusica = 'caverna';
+        }
+
+        if (novaMusica !== this.musicaAtual) {
+            this.trocarMusica(novaMusica);
+        }
 
         //----------- fundos -----------
 
@@ -336,7 +400,46 @@ class CenaVila extends Phaser.Scene {
         }
     }
 
+    controlarBruxa() {
+        if (!this.bruxa) return;
+
+        const distancia = Phaser.Math.Distance.Between(
+            this.player.x, this.player.y,
+            this.bruxa.x, this.bruxa.y
+        );
+
+        // Se chegar perto, ela some
+        if (distancia < 200 && this.bruxaVisivel) {
+            this.bruxaVisivel = false;
+
+            this.tweens.add({
+                targets: this.bruxa,
+                alpha: 0,
+                duration: 600,
+                onComplete: () => {
+                    this.bruxa.setVisible(false);
+                }
+            });
+        }
+
+        // Se afastar, ela reaparece
+        if (distancia > 350 && !this.bruxaVisivel) {
+            this.bruxaVisivel = true;
+
+            this.bruxa.setVisible(true);
+            this.bruxa.setAlpha(0);
+
+            this.tweens.add({
+                targets: this.bruxa,
+                alpha: 0.8,
+                duration: 800
+            });
+        }
+    }
+
 }
+
+
 
 /* =====================
    CONFIGURAÇÃO DO PHASER
@@ -353,4 +456,11 @@ const config = {
     scene: CenaVila
 };
 
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+function alterarVolume(valor) {
+    const cena = game.scene.keys['CenaVila'];
+    if (cena && cena.sound) {
+        cena.sound.volume = valor;
+    }
+}
