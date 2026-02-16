@@ -23,15 +23,16 @@
 
   <div id="menu">
     <div id="tela-inicial">
-      <h1>O Último Herói origens</h1>
-      <button onclick="abrirTelaSlots()">Jogar / Carregar Jogo</button>
-      <button onclick="abrirPainelFinais()">🏆 Galeria de Finais</button>
+      <h1 data-lang="titulo_jogo">O Último Herói origens</h1>
+      <button onclick="abrirTelaSlots()" data-lang="btn_jogar">Jogar / Carregar Jogo</button>
+      <button onclick="abrirPainelFinais()" data-lang="btn_finais">🏆 Galeria de Finais</button>
       <div id="codigo-container">
-        <input type="text" id="input-codigo" placeholder="Inserir código...">
-        <button onclick="resgatarCodigo()">Resgatar</button>
+        <input type="text" id="input-codigo" data-lang-placeholder="placeholder_codigo" placeholder="Inserir código...">
+        <button onclick="resgatarCodigo()" data-lang="btn_resgatar">Resgatar</button>
       </div>
-      <button onclick="mostrarCreditos()">Créditos</button>
-      <p>Beta 1.0</p>
+      <button onclick="mostrarCreditos()" data-lang="btn_creditos">Créditos</button>
+      <button onclick="trocarIdioma()" data-lang="btn_idioma">🌍 Language</button>
+      <p>Beta 1.2</p>
     </div>
   </div>
 
@@ -55,7 +56,7 @@
 
   <div id="controle-volume">
     🔊 Volume
-    <input type="range" min="0" max="1" step="0.01" value="0.5" onchange="alterarVolume(this.value)">
+    <button> <input type="range" min="0" max="1" step="0.01" value="0.5" onchange="alterarVolume(this.value)"> </button>
   </div>
 
   <link rel="icon" href="data:,">
@@ -64,7 +65,7 @@
 
   <div id="tela-slots" style="display: none;">
     <div class="modal-content">
-      <h2>💾 Selecione um Slot</h2>
+      <h2 data-lang="slot_titulo">💾 Selecione um Slot</h2>
       <div class="slots-container">
         <div class="slot-card" id="slot-1">
           <h3>Slot 1</h3>
@@ -72,8 +73,8 @@
             <p id="info-slot-1">Vazio</p>
           </div>
           <div class="slot-actions">
-            <button class="btn-jogar" onclick="carregarJogo(1)">Jogar</button>
-            <button class="btn-apagar" onclick="apagarSlot(1)">Apagar</button>
+            <button class="btn-jogar" onclick="carregarJogo(1)" data-lang="btn_jogar">Jogar</button>
+            <button class="btn-apagar" onclick="apagarSlot(1)" data-lang="btn_apagar">Apagar</button>
           </div>
         </div>
         <div class="slot-card" id="slot-2">
@@ -82,8 +83,8 @@
             <p id="info-slot-2">Vazio</p>
           </div>
           <div class="slot-actions">
-            <button class="btn-jogar" onclick="carregarJogo(2)">Jogar</button>
-            <button class="btn-apagar" onclick="apagarSlot(2)">Apagar</button>
+            <button class="btn-jogar" onclick="carregarJogo(2)" data-lang="btn_jogar">Jogar</button>
+            <button class="btn-apagar" onclick="apagarSlot(2)" data-lang="btn_apagar">Apagar</button>
           </div>
         </div>
         <div class="slot-card" id="slot-3">
@@ -92,12 +93,12 @@
             <p id="info-slot-3">Vazio</p>
           </div>
           <div class="slot-actions">
-            <button class="btn-jogar" onclick="carregarJogo(3)">Jogar</button>
-            <button class="btn-apagar" onclick="apagarSlot(3)">Apagar</button>
+            <button class="btn-jogar" onclick="carregarJogo(3)" data-lang="btn_jogar">Jogar</button>
+            <button class="btn-apagar" onclick="apagarSlot(3)" data-lang="btn_apagar">Apagar</button>
           </div>
         </div>
       </div>
-      <button class="btn-voltar" onclick="fecharTelaSlots()">Voltar</button>
+      <button class="btn-voltar" onclick="fecharTelaSlots()" data-lang="btn_voltar">Voltar</button>
     </div>
   </div>
 
@@ -105,34 +106,36 @@
     <div class="colunas">
 
       <div id="painel-lateral">
-        <h3>📊 Status</h3>
-        <p>📅 Dia: <span id="dia-atual">1</span> / 10</p>
-        <p>Nome: <span id="nome-heroi">Herói</span></p>
-        <p>Vida: <span id="vida">100</span>/<span id="vida-maxima">100</span></p>
-        Energia: <span id="energia-atual"></span>/<span id="energia-maxima"></span>
-        <p>Ouro: <span id="dinheiro">0</span></p>
-        <div id="status-combate">
-          ⚔️ ATQ: <span id="atk">0</span> |
-          🛡️ DEF: <span id="def">0</span>
-        </div>
-        <hr>
-        <button id="botaoTutorial" class="botao-piscando" onclick="abrirTutorial()">
+        <h3 data-lang="titulo_status">📊 Status</h3>
+
+        <p><span data-lang="label_dia">📅 Dia:</span> <span id="dia-atual">1</span> / 10</p>
+
+        <p><span data-lang="label_vida">❤️ Vida:</span> <span id="vida">100</span> / <span id="vida-maxima">100</span>
+        </p>
+
+        <p><span data-lang="label_energia">⚡ Energia:</span> <span id="energia-atual">10</span> / <span
+            id="energia-maxima">10</span></p>
+
+        <p><span data-lang="label_ouro">💰 Ouro:</span> <span id="dinheiro">0</span></p>
+
+        <p>⚔️ ATQ: <span id="atk">10</span></p>
+        <p>🛡️ DEF: <span id="def">0</span></p>
+
+        <button id="botaoTutorial" class="botao-piscando" onclick="abrirTutorial()" data-lang="btn_tutorial">
           📖 Tutorial
         </button>
+
         <div id="vila-status">
-          <h4>🏠 Vila</h4>
-          <p>Nível: <span id="nivel-vila">1</span></p>
-          <p>Madeira: <span id="madeira">0</span></p>
-          <p>Pedra: <span id="pedra">0</span></p>
-          <p>Ferro: <span id="ferro">0</span></p>
+          <h4 data-lang="titulo_vila">🏠 Vila</h4>
+          <p><span data-lang="label_nivel">Nível:</span> <span id="nivel-vila">1</span></p>
+
+          <p><span data-lang="label_madeira">🌲 Madeira:</span> <span id="madeira">0</span></p>
+          <p><span data-lang="label_pedra">🪨 Pedra:</span> <span id="pedra">0</span></p>
+          <p><span data-lang="label_ferro">⛓️ Ferro:</span> <span id="ferro">0</span></p>
         </div>
-        <button onclick="salvarESair()" style="background: #555; width: 100%;">💾 Salvar e Sair</button>
-        <div style="display:none">
-          <span id="prox-nivel"></span>
-          <span id="custo-madeira"></span>
-          <span id="custo-pedra"></span>
-          <span id="custo-ferro"></span>
-        </div>
+
+        <button onclick="salvarESair()" style="background: #555; width: 100%; margin-top: 10px;"
+          data-lang="btn_salvar">💾 Salvar e Sair</button>
       </div>
       <div id="centro">
         <div id="game-container"></div>
@@ -144,7 +147,7 @@
         <div id="painel-jornal" class="oculto">
           <h2 id="titulo-jornal"></h2>
           <div id="texto-jornal"></div>
-          <button onclick="fecharJornal()">Fechar</button>
+          <button onclick="fecharJornal()">${t("jornalFechar")}</button>`;
         </div>
 
         <div id="painel-inventario" class="painel oculto">
@@ -155,37 +158,53 @@
           </div>
         </div>
 
-        <button onclick="abrirInventario()" id="btn-inventario">Inventário</button>
+        <button onclick="abrirInventario()" id="btn-inventario" data-lang="btn_inventario">Inventário</button>
 
         <div id="loja-menu" style="display:none">
-          <h3>🛒 Loja</h3>
+          <h3 data-lang="loja_titulo">🛒 Loja</h3>
 
           <button onclick="comprarPocao()">
-            🧪 Poção (cura 30) – 20 ouro
+            <span data-lang="loja_item_pocao">🧪 Poção (cura 30) – 20 ouro</span>
           </button>
 
           <button onclick="comprarEspada()">
-            ⚔️ Espada (+5 ATQ) – 50 ouro
+            <span data-lang="loja_item_espada">⚔️ Espada (+5 ATQ) – 50 ouro</span>
           </button>
 
           <button onclick="comprarEscudo()">
-            🛡️ Escudo (+3 DEF) – 40 ouro
+            <span data-lang="loja_item_escudo">🛡️ Escudo (+3 DEF) – 40 ouro</span>
           </button>
 
           <br><br>
-          <button onclick="fecharLoja()">❌ Sair da loja</button>
+          <button onclick="fecharLoja()" data-lang="btn_sair_loja">❌ Sair da loja</button>
         </div>
 
         <div id="menuTutorial" class="menu-ui" style="display:none;">
-          <h2>📘 Tutorial — Sistema de Energia</h2>
-          <p>
-            Seu herói possui <b>10 de energia por dia</b>.<br><br>
-            🔹 Cada ação consome energia (lutar, coletar, melhorar vila, etc).<br>
-            🔹 Quando a energia chega a <b>0</b>, você precisa <b>dormir</b>.<br>
-            🔹 Dormir encerra o dia e restaura sua energia.<br><br>
-            ⚠️ Planeje bem suas ações!
-          </p>
-          <button onclick="fecharTutorial()">Fechar</button>
+          <h2 data-lang="tut_sobre_titulo">📖 Sobre o Mundo</h2>
+          <p data-lang="tut_sobre_texto1">Sua vila era um lugar pacífico… até monstros começarem a surgir das florestas
+            e cavernas.</p>
+          <p data-lang="tut_sobre_texto2">Os moradores vivem com medo. Você é um dos poucos que ainda tem coragem de
+            sair e enfrentar o desconhecido.</p>
+
+          <h2 data-lang="tut_energia_titulo">⚡ Energia</h2>
+          <p data-lang="tut_energia_texto1">Você tem 10 de energia por dia.</p>
+          <p data-lang="tut_energia_texto2">Cada ação consome energia (lutar, coletar, explorar).</p>
+          <p data-lang="tut_energia_texto3">Quando acaba, você precisa dormir na vila.</p>
+          <p data-lang="tut_energia_texto4">Escolha bem suas ações.</p>
+
+          <h2 data-lang="tut_recursos_titulo">🪨 Recursos</h2>
+          <p data-lang="tut_recursos_texto1">Pedras e galhos podem ser coletados pelo mapa.</p>
+          <p data-lang="tut_recursos_texto2">Leve-os ao ferreiro para criar seus primeiros equipamentos.</p>
+
+          <h2 data-lang="tut_combate_titulo">⚔️ Combate</h2>
+          <p data-lang="tut_combate_texto1">Sem arma você não consegue lutar.</p>
+          <p data-lang="tut_combate_texto2">Fique mais forte para enfrentar criaturas cada vez mais perigosas.</p>
+
+          <h2 data-lang="tut_jornal_titulo">📰 Jornal</h2>
+          <p data-lang="tut_jornal_texto1">Todo dia o jornal traz notícias sobre o avanço dos monstros.</p>
+          <p data-lang="tut_jornal_texto2">O mundo está mudando… e suas escolhas podem definir o destino de todos.</p>
+
+          <button onclick="fecharTutorial()" data-lang="tutorialFechar">Fechar</button>
         </div>
       </div>
 

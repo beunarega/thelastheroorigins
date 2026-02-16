@@ -18,6 +18,10 @@ class CenaVila extends Phaser.Scene {
         this.load.image('mercadoNegro', 'assets/mercado_negro.png');
         this.load.image('templo', 'assets/templo.png');
         this.load.image('bruxa', 'assets/bruxa.png');
+        this.load.image('pedraItem', 'assets/pedra_pequena.png');
+        this.load.image('galhoItem', 'assets/galho.png');
+        this.load.image('ferreiro', 'assets/ferreiro.png');
+        this.load.image('vendedor_ferreiro', 'assets/vendedor.png');
         this.load.audio('musicaNormal', 'audio/musica.mp3');
         this.load.audio('musicaCaverna', 'audio/caverna_ambiente.mp3');
     }
@@ -81,6 +85,13 @@ class CenaVila extends Phaser.Scene {
         this.zonaCama = this.criarZona(500, 200, 80, 80);
         this.zonaTemplo = this.criarZona(800, 450, 80, 80);
         this.zonaJornal = this.criarZona(350, 150, 60, 60);
+        this.zonaFerreiro = this.add.rectangle(450, 450, 60, 60).setVisible(false);
+        this.physics.add.existing(this.zonaFerreiro, true);
+
+        this.spriteFerreiro = this.add.sprite(450, 450, 'ferreiro');
+        this.spriteFerreiro.setDepth(1);
+
+        this.grupoVila.add(this.spriteFerreiro);
 
         // FLORESTA
         this.zonaArvore = this.criarZona(1300, 300, 60, 60);
@@ -94,6 +105,7 @@ class CenaVila extends Phaser.Scene {
         this.bruxaVisivel = true;
         // CAVERNA
         this.zonaLuta = this.criarZona(2500, 400, 120, 120);
+        this.vendedor = this.physics.add.staticImage(2600, 200, 'vendedor_ferreiro');
 
         /* =====================
              SPRITES VISUAIS
@@ -167,6 +179,20 @@ class CenaVila extends Phaser.Scene {
 
         this.grupoVila.add(this.spriteTemplo);
 
+        this.vendedorPodeAbrir = true;
+
+        this.physics.add.overlap(this.player, this.vendedor, () => {
+            if (this.vendedorPodeAbrir) {
+                menuVendedorArmadura();
+                this.vendedorPodeAbrir = false; // Trava: não abre mais enquanto estiver encostado
+
+                // Pequeno delay para permitir abrir de novo após sair e entrar no contato
+                this.time.delayedCall(2000, () => {
+                    this.vendedorPodeAbrir = true;
+                });
+            }
+        }, null, this);
+
         this.bgVila.setDepth(0);
         this.bgFloresta.setDepth(0);
         this.bgCaverna.setDepth(0);
@@ -182,6 +208,29 @@ class CenaVila extends Phaser.Scene {
         this.spriteTemplo.setDepth(1);
 
         this.player.setDepth(2);
+
+        this.recursos = this.physics.add.group();
+
+        for (let i = 0; i < 20; i++) {
+            const tipo = Math.random() < 0.5 ? 'pedraItem' : 'galhoItem';
+            const x = Phaser.Math.Between(1200, 2800); // floresta + caverna
+            const y = Phaser.Math.Between(200, 1800);
+
+            const sprite = this.recursos.create(x, y, tipo);
+            sprite.tipoRecurso = tipo;
+        }
+
+        this.physics.add.overlap(this.player, this.recursos, (player, recurso) => {
+            // 1. Limpa o nome: transforma 'pedraItem' em 'pedra'
+            const tipo = recurso.tipoRecurso.replace('Item', '');
+
+            // 2. Chama a função no game.js passando o NOME (string), não o objeto
+            // E verifica se a coleta funcionou (se tinha energia)
+            if (window.coletarRecurso(tipo)) {
+                // 3. Se deu certo, destrói o item da tela
+                recurso.destroy();
+            }
+        });
 
         this.time.addEvent({
             delay: 4000,
@@ -290,14 +339,27 @@ class CenaVila extends Phaser.Scene {
         /* =====================
            MOVIMENTO
         ===================== */
-        const speed = 160;
-        this.player.body.setVelocity(0);
+        if (!this.player || !this.player.body) return;
 
-        if (this.cursors.left.isDown) this.player.body.setVelocityX(-speed);
-        else if (this.cursors.right.isDown) this.player.body.setVelocityX(speed);
+        // Trava de segurança: se heroi ou armadura não existirem, usa velocidade padrão (160)
+        let velBase = 160;
+        if (typeof heroi !== 'undefined' && heroi.armadura && heroi.armadura.boots) {
+            velBase = 240; // Velocidade com botas
+        }
 
-        if (this.cursors.up.isDown) this.player.body.setVelocityY(-speed);
-        else if (this.cursors.down.isDown) this.player.body.setVelocityY(speed);
+        this.player.setVelocity(0);
+
+        if (this.cursors.left.isDown) {
+            this.player.setVelocityX(-velBase);
+        } else if (this.cursors.right.isDown) {
+            this.player.setVelocityX(velBase);
+        }
+
+        if (this.cursors.up.isDown) {
+            this.player.setVelocityY(-velBase);
+        } else if (this.cursors.down.isDown) {
+            this.player.setVelocityY(velBase);
+        }
 
         this.textoAcao.setText('');
 
@@ -331,14 +393,13 @@ class CenaVila extends Phaser.Scene {
            INTERAÇÕES
         ===================== */
 
-        // FLORESTA
         if (this.overlap(this.zonaArvore)) {
-            this.acao('🌲 Pegar MADEIRA', () => coletar('madeira'));
+            this.acao('acao_madeira', () => coletar('madeira')); // Mudou aqui
         }
 
         // MINÉRIO
         if (this.overlap(this.zonaMinerio)) {
-            this.acao('⛏️ Minerar PEDRA e FERRO', () => {
+            this.acao('acao_minerar', () => { // Mudou aqui
                 coletar('pedra');
                 coletar('ferro');
             });
@@ -346,35 +407,38 @@ class CenaVila extends Phaser.Scene {
 
         // MERCADO NEGRO
         if (this.overlap(this.zonaMercadoNegro)) {
-            this.acao('🕶️ Mercado Negro', () => abrirMercadoNegro());
+            this.acao('acao_mercado', () => abrirMercadoNegro());
         }
 
         // LUTA
         if (this.overlap(this.zonaLuta)) {
-            this.acao('⚔️ Explorar Caverna', () => decidirLuta());
+            this.acao('acao_caverna', () => decidirLuta());
         }
 
         // VILA
         if (this.overlap(this.zonaUpgrade)) {
-            this.acao('🏠 Melhorar VILA', () => executarMelhoriaVila());
+            this.acao('acao_melhorar', () => executarMelhoriaVila());
         }
 
         if (this.overlap(this.zonaCama)) {
-            this.acao('💤 Dormir', () => dormir());
+            this.acao('acao_dormir', () => dormir());
         }
 
         if (this.overlap(this.zonaLoja)) {
-            this.acao('🛒 Entrar na loja', () => abrirLoja());
+            this.acao('acao_loja', () => abrirLoja());
         }
 
         if (this.overlap(this.zonaJornal)) {
-            this.acao('📰 Ler Jornal', () => lerJornal());
+            this.acao('acao_jornal', () => lerJornal());
         }
 
         if (this.overlap(this.zonaTemplo)) {
-            this.acao('⛩️ Entrar no Templo', () => abrirTemplo());
+            this.acao('acao_templo', () => abrirTemplo());
         }
 
+        if (this.overlap(this.zonaFerreiro)) {
+            this.acao('acao_ferreiro', () => abrirFerreiro());
+        }
 
         /* =====================
                ATUALIZAÇÃO DO MINI-MAPA
@@ -393,8 +457,15 @@ class CenaVila extends Phaser.Scene {
         return this.physics.overlap(this.player, zona);
     }
 
-    acao(texto, callback) {
-        this.textoAcao.setText(`Pressione ESPAÇO para ${texto}`);
+    acao(chaveTexto, callback) {
+        // Pega a tradução da ação (ex: "Pegar Madeira")
+        const textoAcaoTraduzido = window.t(chaveTexto);
+
+        // Pega o template "Pressione ESPAÇO para..."
+        const textoCompleto = window.t('pressione_espaco', { acao: textoAcaoTraduzido });
+
+        this.textoAcao.setText(textoCompleto);
+
         if (Phaser.Input.Keyboard.JustDown(this.cursors.space)) {
             callback();
         }
